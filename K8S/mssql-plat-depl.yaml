@@ -1,0 +1,71 @@
+#Цей код представляє конфігурацію Kubernetes для створення Deployment 
+#та сервісів для розгортання Microsoft SQL Server (MSSQL) в Kubernetes кластері. 
+
+apiVersion: apps/v1 # Версія API для використання (v1 версія API для роботи з ресурсами Service).
+kind: Deployment # Вказує тип ресурсу, який ми визначаємо
+metadata:
+  name: mssql-depl
+spec:
+  replicas: 1 #Кількість реплік (подів) для розгортання - у цьому випадку 1.
+  selector: #Визначає, як вибирати поди для цього розгортання за допомогою міток (labels).
+    matchLabels:
+      app: mssql
+  template: # Опис шаблону пода, включаючи мітки та контейнери.
+    metadata:
+      labels:
+        app: mssql
+    spec:
+      containers: #Опис контейнера з MSSQL Server.
+        - name: mssql
+          image: mcr.microsoft.com/mssql/server:2017-latest #Використовуваний образ MSSQL Server.
+          ports:
+            - containerPort: 1433 #Порт, на якому слухає MSSQL Server (1433).
+          env: #Параметри середовища, такі як MSSQL_PID, ACCEPT_EULA, та SA_PASSWORD (взяті з секрету mssql).
+          - name: MSSQL_PID
+            value: "Express"
+          - name: ACCEPT_EULA
+            value: "Y"
+          - name: SA_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mssql
+                key: SA_PASSWORD
+          volumeMounts: #Підключення тома для збереження даних MSSQL Server.
+          - mountPath: /var/opt/mssql/data
+            name: mssqldb
+      volumes: #Опис тома для збереження даних MSSQL Server, який пов'язаний з PersistentVolumeClaim.
+      - name: mssqldb
+        persistentVolumeClaim:
+          claimName: mssql-claim
+---
+apiVersion: v1 # Версія API для використання (v1 версія API для роботи з ресурсами Service).
+kind: Service # Вказує тип ресурсу, який ми визначаємо
+metadata:
+  name: mssql-clusterip-srv
+spec:
+  type: ClusterIP #Сервіс типу ClusterIP, який призначений для доступу до подів всередині кластера.
+  selector: #Вибір подів, які будуть обслуговуватися цим сервісом (вибираються ті, що мають мітку app: mssql).
+    app: mssql
+  ports: #Опис порту, на якому слухає сервіс, та порту, на який направляються запити (1433 для MSSQL Server).
+  - name: mssql
+    protocol: TCP
+    port: 1433
+    targetPort: 1433
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql-loadbalancer
+spec:
+  type: LoadBalancer #Сервіс типу LoadBalancer, який надає зовнішній доступ до подів.
+  selector: #Вибір подів, які будуть обслуговуватися цим сервісом (вибираються ті, що мають мітку app: mssql).
+    app: mssql
+  ports: # Опис порту, на якому слухає сервіс, та порту, на який направляються запити (1433 для MSSQL Server).
+  - protocol: TCP
+    port: 1433
+    targetPort: 1433
+    
+    
+#Загалом, цей код визначає розгортання MSSQL Server 
+#з можливістю звертатися до нього в межах кластера (через mssql-clusterip-srv) 
+#або через зовнішній LoadBalancer (mssql-loadbalancer).

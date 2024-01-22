@@ -1,0 +1,13 @@
+#Цей код представляє конфігурацію об'єкта Kubernetes PersistentVolumeClaim (PVC)
+
+apiVersion: v1 # Вказує на те, що цей об'єкт використовує API версії 1 для ресурсів Kubernetes.
+kind: PersistentVolumeClaim # Визначає тип ресурсу, який створюється 
+metadata: # Вказує метадані для цього об'єкта, такі як його ім'я.
+  name: mssql-claim # Надає ім'я PersistentVolumeClaim - "mssql-claim".
+spec: #Вказує специфікацію (конфігурацію) PersistentVolumeClaim.
+  accessModes: #Вказує режими доступу до даних на томі. 
+    - ReadWriteMany # може бути читаним та записуваним з багатьох подів одночасно.
+  resources: # Вказує ресурси, які вимагаються для PVC.
+    requests: #Вказує необхідний обсяг зберігання для PVC.
+      storage: 200Mi #Зазначає, що необхідний обсяг зберігання становить 200 мегабайт.
+ 

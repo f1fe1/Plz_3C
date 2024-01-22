@@ -1,0 +1,30 @@
+//Ця строка вказує, що використовується синтаксис Protocol Buffers версії 3.
+syntax = "proto3";
+
+// Ця директива вказує простір імен (namespace) для генерації коду на мові програмування C#.
+option csharp_namespace = "BookCollection";
+
+//Оголошення сервісу з ім'ям "GrpcBook". 
+//У ньому визначений один метод GetAllBook, який приймає об'єкт типу GetAllRequest
+// і повертає об'єкт типу BooksResponse.
+service GrpcBook {
+    rpc GetAllBook (GetAllRequest) returns (BooksResponse);
+}
+
+//Визначення порожнього повідомлення (message) з ім'ям "GetAllRequest
+message GetAllRequest {}
+
+//Визначення повідомлення з ім'ям "GrpcBookCollection
+message GrpcBookCollection{
+    int32 booksId = 1;
+    string tittle = 2;
+    string author = 3;
+    string genre = 4;
+    string owner = 5;
+}
+
+//Визначення повідомлення "BooksResponse", яке містить масив повідомлень "GrpcBookCollection"
+//Це використовується для представлення списку книг у відповіді на метод GetAllBook.
+message BooksResponse {
+    repeated GrpcBookCollection bookbytes = 1;
+}

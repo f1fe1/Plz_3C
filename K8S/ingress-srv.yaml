@@ -1,0 +1,30 @@
+#Цей код представляє конфігурацію Ingress у Kubernetes для маршрутизації HTTP-запитів до відповідних служб в середовищі Kubernetes.
+
+apiVersion: networking.k8s.io/v1 ##Вказує на використання API версії 1 для об'єкта Ingress в схемі мережі Kubernetes.
+kind: Ingress #Вказує на те, що це об'єкт Ingress.
+metadata: # Містить метадані для об'єкта Ingress, такі як ім'я та анотації.
+  name: ingress-srv #Надає ім'я Ingress, яке можна використовувати для ідентифікації об'єкта в Kubernetes.
+  annotations: #Містить анотації, які можуть надавати додаткові налаштування для обробки Ingress контролером. 
+    kubernetes.io/ingress.class: nginx #означає використання контролера Ingress з ім'ям "nginx".
+    nginx.ingress.kubernetes.io/use-regex: 'true'
+spec: # Визначає основну конфігурацію Ingress.
+  rules: #Масив правил, що вказують, як обробляти HTTP-запити для різних хостів.
+    - host: acme.com #Правило для хоста acme.com:
+      http: #Визначає, що це HTTP-правило.
+        paths: #Масив шляхів, які визначають, як обробляти запити для конкретних шляхів.
+          - path: /api/book #Шлях /api/book:
+            pathType: Prefix #Вказує, що шлях /api/book повинен відповідати префіксу
+            backend: #Визначає службу, на яку будуть направлені відповідні HTTP-запити.
+              service:
+                name: book-clusterip-srv #Ім'я служби, яка обробляє цей шлях.
+                port:
+                  number: 80 #Номер порту для вхідного з'єднання з цією службою.
+          - path: /api/c/book #Шлях /api/c/book:
+            pathType: Prefix #Схожий на попередній шлях, вказує на іншу службу з іншим ім'ям.
+            backend: 
+              service:
+                name: bookbyte-clusterip-srv
+                port:
+                  number: 80
+
+              
